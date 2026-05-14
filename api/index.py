@@ -1,8 +1,7 @@
 from http.server import BaseHTTPRequestHandler
 import json
 import requests
-import random
-import string
+import uuid
 
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
@@ -10,44 +9,59 @@ class handler(BaseHTTPRequestHandler):
         post_data = self.rfile.read(content_length)
         data = json.loads(post_data)
         phone_input = data.get("number")
-        
-        # জেনারেট করা ট্রানজেকশন আইডি
-        tran_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=12))
-        
-        try:
-            # Phase 1: OSINT Data Gathering
-            API_KEY = "a8c9306379ea4c2c8380149ad392b7cd"
-            res_api = requests.get(f"https://phonevalidation.abstractapi.com/v1/?api_key={API_KEY}&number={phone_input}", timeout=10).json()
-            
-            # Phase 2: SSLCommerz Data Simulation Logic
-            # রিয়েল লাইফে এখানে SSLCommerz API থেকে রেসপন্স আসবে
-            raw_name = res_api.get("name")
-            
-            if not raw_name or raw_name == "" or raw_name == "Unknown":
-                # এনক্রিপ্টেড ব্যাংকিং আইডি
-                display_name = f"DBBL_MFS_USER_{tran_id[:4]}"
-                status = "PENDING_KYC"
-            else:
-                # ব্যাংকের মতো ক্যাপিটাল লেটার ফরম্যাট
-                display_name = raw_name.upper()
-                status = "VERIFIED_MERCHANT"
 
-            response = {
-                "status": "success",
-                "ssl_payload": {
-                    "store_id": "NEXUS_SYSTEMS_786",
-                    "tran_id": f"SSL-{tran_id}",
-                    "cus_name": display_name,
-                    "cus_phone": phone_input,
-                    "kyc_verification": status,
-                    "gateway": "SSLCommerz v4.0 (Live)",
-                    "operator": res_api.get("carrier") or "Unknown"
+        # SSLCommerz Merchant Credentials
+        # তুমি যদি রিয়েল মার্চেন্ট হও, তবে এখানে তোমার Store ID ও Password বসাবে।
+        # আপাতত টেস্ট করার জন্য এগুলো স্যান্ডবক্স ক্রেডেনশিয়াল হিসেবে কাজ করবে।
+        STORE_ID = "testbox" 
+        STORE_PASS = "testbox@ssl"
+        IS_SANDBOX = True # লাইভ হলে False করতে হবে
+
+        base_url = "https://sandbox.sslcommerz.com" if IS_SANDBOX else "https://securepay.sslcommerz.com"
+
+        payload = {
+            'store_id': STORE_ID,
+            'store_passwd': STORE_PASS,
+            'total_amount': '10.00',
+            'currency': 'BDT',
+            'tran_id': str(uuid.uuid4())[:12], # ইউনিক ট্রানজেকশন আইডি
+            'success_url': 'https://your-domain.com/success',
+            'fail_url': 'https://your-domain.com/fail',
+            'cancel_url': 'https://your-domain.com/cancel',
+            'cus_name': 'Identity_Check',
+            'cus_email': 'check@nexus.com',
+            'cus_phone': phone_input,
+            'cus_add1': 'Dhaka',
+            'cus_city': 'Dhaka',
+            'cus_country': 'Bangladesh',
+            'shipping_method': 'NO',
+            'product_name': 'Digital_ID',
+            'product_category': 'Verification',
+            'product_profile': 'general'
+        }
+
+        try:
+            # সরাসরি SSLCommerz গেটওয়েতে রিকোয়েস্ট পাঠানো হচ্ছে
+            response = requests.post(f"{base_url}/gwprocess/v4/api.php", data=payload)
+            res_data = response.json()
+
+            if res_data.get('status') == 'SUCCESS':
+                # এটি রিয়েল গেটওয়ে সেশন ডাটা রিটার্ন করবে
+                final_response = {
+                    "status": "success",
+                    "data": {
+                        "gateway_url": res_data.get('GatewayPageURL'),
+                        "session_id": res_data.get('sessionkey'),
+                        "system_status": "CONNECTED_TO_SSLCOMMERZ",
+                        "verification_node": "MFS_ROUTING_ACTIVE"
+                    }
                 }
-            }
-        except:
-            response = {"status": "error", "message": "SSL_HANDSHAKE_FAILED"}
+            else:
+                final_response = {"status": "error", "message": "GATEWAY_REJECTED"}
+        except Exception as e:
+            final_response = {"status": "error", "message": str(e)}
 
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
         self.end_headers()
-        self.wfile.write(json.dumps(response).encode())
+        self.wfile.write(json.dumps(final_response).encode())
