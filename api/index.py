@@ -8,19 +8,18 @@ class handler(BaseHTTPRequestHandler):
         content_length = int(self.headers['Content-Length'])
         post_data = self.rfile.read(content_length)
         data = json.loads(post_data)
-        phone_input = data.get("number")
+        phone_input = data.get("number", "")
         
         # নম্বর ক্লিন করা
         target_num = phone_input.replace("+", "").replace(" ", "").replace("-", "").strip()
         if target_num.startswith("88"):
             target_num = target_num[2:]
 
-        # SSLCommerz Sandbox Credentials
+        # SSLCommerz স্যান্ডবক্স ক্রেডেনশিয়াল
         STORE_ID = "testbox"
         STORE_PASS = "testbox@ssl"
         
         try:
-            # সরাসরি SSLCommerz এ সেশন তৈরি করা
             api_url = "https://sandbox.sslcommerz.com/gwprocess/v4/api.php"
             payload = {
                 'store_id': STORE_ID,
@@ -31,14 +30,14 @@ class handler(BaseHTTPRequestHandler):
                 'success_url': 'https://google.com',
                 'fail_url': 'https://google.com',
                 'cancel_url': 'https://google.com',
-                'cus_name': 'ID_CHECK_NODE',
+                'cus_name': 'REAL_IDENTITY_CHECK',
                 'cus_email': 'verify@nexus.com',
                 'cus_phone': target_num,
                 'cus_add1': 'Dhaka',
                 'cus_city': 'Dhaka',
                 'cus_country': 'Bangladesh',
                 'shipping_method': 'NO',
-                'product_name': 'Identity_Verification',
+                'product_name': 'ID_QUERY',
                 'product_category': 'OSINT',
                 'product_profile': 'general'
             }
@@ -47,18 +46,17 @@ class handler(BaseHTTPRequestHandler):
             res_data = response.json()
 
             if res_data.get('status') == 'SUCCESS':
-                # সাকসেস হলে গেটওয়ে লিঙ্ক পাঠাবে
-                final_result = {
+                final_output = {
                     "status": "success",
-                    "gateway_url": res_data.get('GatewayPageURL')
+                    "url": res_data.get('GatewayPageURL')
                 }
             else:
-                final_result = {"status": "error", "message": "Gateway Rejected"}
+                final_output = {"status": "error", "message": "SSL_REJECTED"}
 
-        except Exception as e:
-            final_result = {"status": "error", "message": "Connection Error"}
+        except:
+            final_output = {"status": "error", "message": "SERVER_TIMEOUT"}
 
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
         self.end_headers()
-        self.wfile.write(json.dumps(final_result).encode())
+        self.wfile.write(json.dumps(final_output).encode())
