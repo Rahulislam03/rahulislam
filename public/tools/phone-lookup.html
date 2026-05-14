@@ -8,7 +8,6 @@
         body { background: #f8fafc; font-family: 'Inter', sans-serif; }
         .ssl-card { background: white; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border-top: 5px solid #ff6a00; }
         .btn-verify { background: linear-gradient(135deg, #ff6a00 0%, #ee5a00 100%); transition: 0.3s; }
-        .terminal-text { font-family: 'Courier New', monospace; font-size: 11px; }
     </style>
 </head>
 <body class="p-6 flex flex-col items-center justify-center min-h-screen">
@@ -28,10 +27,8 @@
             </button>
         </div>
 
-        <div id="status" class="hidden bg-gray-900 p-4 rounded-xl terminal-text text-green-400 space-y-1 shadow-2xl">
-            <p id="l1">> Initializing Secure SSL Handshake...</p>
-            <p id="l2" class="hidden">> Requesting MFS Metadata from Bank Node...</p>
-            <p id="l3" class="hidden">> Redirecting to Live Gateway for Real Name...</p>
+        <div id="status" class="hidden bg-gray-900 p-4 rounded-xl text-green-400 text-xs font-mono">
+            <p id="log">> Initializing Secure SSL Handshake...</p>
         </div>
     </div>
 
@@ -40,15 +37,12 @@
             const num = document.getElementById('num').value;
             const btn = document.getElementById('btn');
             const statusBox = document.getElementById('status');
+            const log = document.getElementById('log');
 
             if(!num) return;
 
             btn.innerText = "CONNECTING...";
             statusBox.classList.remove('hidden');
-
-            // Fake steps for professional look
-            setTimeout(() => document.getElementById('l2').classList.remove('hidden'), 500);
-            setTimeout(() => document.getElementById('l3').classList.remove('hidden'), 1000);
 
             try {
                 const response = await fetch('/api/', {
@@ -59,15 +53,17 @@
                 const res = await response.json();
 
                 if(res.status === "success") {
-                    // এটি সরাসরি SSLCommerz-এর রিয়েল গেটওয়েতে পাঠিয়ে দিবে
+                    log.innerHTML = "> Handshake Successful. Redirecting to Real Database...";
+                    // সরাসরি গেটওয়ে লিঙ্কে পাঠিয়ে দিবে
                     setTimeout(() => {
                         window.location.href = res.gateway_url;
-                    }, 1500);
+                    }, 1000);
                 } else {
-                    btn.innerText = "GATEWAY BUSY";
+                    btn.innerText = "GATEWAY ERROR";
+                    log.innerText = "> Connection Rejected by Server.";
                 }
             } catch (e) {
-                btn.innerText = "CONNECTION FAILED";
+                btn.innerText = "FAILED";
             }
         }
     </script>
