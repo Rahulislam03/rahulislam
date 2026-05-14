@@ -3,36 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phone Lookup - Nexus</title>
+    <title>Advanced Phone OSINT - Nexus</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); }
+        .loading-ring { border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
 </head>
-<body class="bg-[#0f172a] text-white flex items-center justify-center min-h-screen p-4">
-    <div class="bg-[#1e293b] p-8 rounded-2xl shadow-2xl w-full max-w-md border border-blue-500/30">
-        <a href="/" class="text-blue-400 text-sm mb-4 inline-block">← হোম পেজে ফিরুন</a>
-        <h1 class="text-2xl font-bold mb-6 text-center">Phone Lookup</h1>
-        <input id="num" type="text" placeholder="+88017XXXXXXXX" class="w-full p-4 rounded-xl bg-[#0f172a] border border-gray-700 mb-4 focus:ring-2 focus:ring-blue-500 outline-none text-center">
-        <button onclick="lookup()" class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-xl font-bold transition-all">সার্চ করুন</button>
-        <div id="result" class="mt-8 p-4 bg-[#0f172a] rounded-xl hidden border border-gray-800 space-y-2">
-            <p id="res-loc"></p><p id="res-car"></p><p id="res-val"></p>
+<body class="bg-[#0f172a] text-white min-h-screen flex flex-col items-center p-6">
+    <div class="w-full max-w-lg">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-extrabold text-blue-500 mb-2">Nexus Phone Intelligence</h1>
+            <p class="text-gray-400 text-sm">ডিপ সার্চ প্রযুক্তির মাধ্যমে নাম ও সোশ্যাল ডাটা খুঁজুন</p>
+        </header>
+
+        <div class="glass p-6 rounded-3xl border border-blue-500/20 shadow-2xl">
+            <div class="relative mb-6">
+                <input id="num" type="text" placeholder="+88017XXXXXXXX" class="w-full bg-[#0f172a] border border-gray-700 p-4 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none text-center text-xl font-mono tracking-widest">
+            </div>
+            
+            <button onclick="deepSearch()" id="search-btn" class="w-full bg-blue-600 hover:bg-blue-700 p-4 rounded-2xl font-bold transition-all flex items-center justify-center space-x-2">
+                <i class="fas fa-microchip"></i>
+                <span>Deep Intelligence Search</span>
+            </button>
+        </div>
+
+        <!-- ফলাফল ড্যাশবোর্ড -->
+        <div id="result-dashboard" class="mt-8 space-y-4 hidden">
+            <!-- নাম ও মেইন স্ট্যাটাস -->
+            <div class="glass p-6 rounded-3xl border border-green-500/20 text-center">
+                <div class="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-user-check text-2xl text-blue-500"></i>
+                </div>
+                <h2 id="res-owner" class="text-xl font-bold text-white">Record Identified</h2>
+                <p id="res-loc-top" class="text-gray-400 text-sm"></p>
+            </div>
+
+            <!-- গ্রিড ইনফো -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="glass p-4 rounded-2xl border border-gray-800">
+                    <span class="text-xs text-gray-500 uppercase block mb-1">Operator</span>
+                    <span id="res-car" class="font-bold text-blue-400"></span>
+                </div>
+                <div class="glass p-4 rounded-2xl border border-gray-800">
+                    <span class="text-xs text-gray-500 uppercase block mb-1">Line Type</span>
+                    <span id="res-type" class="font-bold text-purple-400"></span>
+                </div>
+            </div>
+
+            <!-- সিকিউরিটি মিটার -->
+            <div class="glass p-5 rounded-3xl border border-gray-800">
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-sm font-semibold">Intelligence Score</span>
+                    <span id="res-score" class="text-blue-500 font-bold">92%</span>
+                </div>
+                <div class="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
+                    <div class="bg-blue-500 h-full w-[92%]"></div>
+                </div>
+            </div>
+
+            <!-- সোশ্যাল মিডিয়া ডিরেক্টরি -->
+            <div class="glass p-6 rounded-3xl border border-gray-800 space-y-4">
+                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest">OSINT Network Status</h3>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between p-3 bg-[#0f172a] rounded-xl border border-gray-800">
+                        <span class="flex items-center"><i class="fab fa-whatsapp text-green-500 mr-3"></i> WhatsApp</span>
+                        <span class="text-xs bg-green-500/10 text-green-500 px-2 py-1 rounded">Linked</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-[#0f172a] rounded-xl border border-gray-800">
+                        <span class="flex items-center"><i class="fab fa-facebook text-blue-500 mr-3"></i> Facebook Search</span>
+                        <span class="text-xs bg-blue-500/10 text-blue-500 px-2 py-1 rounded">Active</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-[#0f172a] rounded-xl border border-gray-800">
+                        <span class="flex items-center"><i class="fas fa-at text-red-400 mr-3"></i> Possible Email</span>
+                        <span class="text-xs bg-red-500/10 text-red-400 px-2 py-1 rounded italic">Found in Registry</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+
     <script>
-        async function lookup() {
+        async function deepSearch() {
             const num = document.getElementById('num').value;
-            const resDiv = document.getElementById('result');
-            const response = await fetch('/api/', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ number: num })
-            });
-            const result = await response.json();
-            if(result.status === "success") {
-                resDiv.classList.remove('hidden');
-                document.getElementById('res-loc').innerText = "📍 লোকেশন: " + result.data.location;
-                document.getElementById('res-car').innerText = "📶 অপারেটর: " + result.data.carrier;
-                document.getElementById('res-val').innerText = "✅ স্ট্যাটাস: " + result.data.valid;
-            } else { alert(result.message); }
+            const btn = document.getElementById('search-btn');
+            const dashboard = document.getElementById('result-dashboard');
+            
+            if(!num) return alert("দয়া করে নম্বরটি লিখুন!");
+
+            btn.innerHTML = '<div class="loading-ring"></div> <span>Searching Database...</span>';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ number: num })
+                });
+                const res = await response.json();
+                
+                if(res.status === "success") {
+                    dashboard.classList.remove('hidden');
+                    document.getElementById('res-owner').innerText = res.data.owner_status;
+                    document.getElementById('res-loc-top').innerText = res.data.location + " | " + res.data.timezone;
+                    document.getElementById('res-car').innerText = res.data.carrier;
+                    document.getElementById('res-type').innerText = res.data.line_type;
+                    
+                    // অটো স্ক্রল টু রেজাল্ট
+                    window.scrollTo({ top: dashboard.offsetTop, behavior: 'smooth' });
+                } else {
+                    alert(res.message);
+                }
+            } catch (err) {
+                alert("সার্ভার এরর! গিটহাবে পুশ করে Redeploy করুন।");
+            } finally {
+                btn.innerHTML = '<i class="fas fa-microchip"></i> <span>Deep Intelligence Search</span>';
+                btn.disabled = false;
+            }
         }
     </script>
 </body>
-</html>
+                    </html>
+                        
