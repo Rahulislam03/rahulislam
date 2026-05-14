@@ -2,50 +2,53 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SSLCommerz - Real Identity Node</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSLCommerz - Identity Gateway</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: #f8fafc; font-family: 'Inter', sans-serif; }
-        .ssl-card { background: white; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border-top: 5px solid #ff6a00; }
-        .btn-verify { background: linear-gradient(135deg, #ff6a00 0%, #ee5a00 100%); transition: 0.3s; }
+        body { background: #f1f5f9; font-family: sans-serif; }
+        .main-card { background: white; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); border-top: 4px solid #ff6a00; }
+        .loader { border-top-color: #ff6a00; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="p-6 flex flex-col items-center justify-center min-h-screen">
+<body class="flex items-center justify-center min-h-screen p-4">
 
-    <div class="max-w-md w-full">
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-black italic text-blue-800">SSL<span class="text-orange-500">Commerz</span></h1>
-            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">Real-Time Merchant Identity Gateway</p>
-        </div>
+    <div class="max-w-md w-full text-center">
+        <h1 class="text-2xl font-black italic text-blue-800 mb-8 tracking-tighter">SSL<span class="text-orange-500">Commerz</span> Secure</h1>
 
-        <div class="ssl-card p-8 mb-6">
-            <label class="text-[11px] font-bold text-gray-400 uppercase mb-3 block">Input Target MSISDN</label>
-            <input id="num" type="text" placeholder="01XXXXXXXXX" class="w-full bg-gray-50 border-2 border-gray-100 p-4 rounded-xl text-xl font-bold focus:border-orange-500 outline-none transition-all mb-4">
+        <div class="main-card p-8">
+            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-6">Input Target Number for Real Identity</p>
             
-            <button onclick="accessRealGateway()" id="btn" class="w-full btn-verify py-4 rounded-xl font-bold text-white uppercase text-xs tracking-widest shadow-lg shadow-orange-500/30">
-                Execute Real Search
+            <input id="num" type="text" placeholder="XXXXXXXXXX" class="w-full border-2 border-gray-100 p-4 rounded-xl text-xl font-bold focus:border-orange-500 outline-none transition-all mb-6 text-center">
+            
+            <button onclick="startGateway()" id="btn" class="w-full bg-orange-500 py-4 rounded-xl font-bold text-white uppercase text-xs tracking-widest hover:bg-orange-600 shadow-lg">
+                Verify Real Identity
             </button>
-        </div>
 
-        <div id="status" class="hidden bg-gray-900 p-4 rounded-xl text-green-400 text-xs font-mono">
-            <p id="log">> Initializing Secure SSL Handshake...</p>
+            <div id="loading" class="hidden flex flex-col items-center mt-6">
+                <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-10 w-10 mb-2"></div>
+                <p class="text-[10px] text-gray-500 font-bold uppercase italic">Establishing Secure Session...</p>
+            </div>
         </div>
+        
+        <p class="text-[9px] text-gray-400 mt-8 uppercase tracking-widest">PCI-DSS Level 1 Verified Gateway Connection</p>
     </div>
 
     <script>
-        async function accessRealGateway() {
+        async function startGateway() {
             const num = document.getElementById('num').value;
             const btn = document.getElementById('btn');
-            const statusBox = document.getElementById('status');
-            const log = document.getElementById('log');
+            const loading = document.getElementById('loading');
 
             if(!num) return;
 
-            btn.innerText = "CONNECTING...";
-            statusBox.classList.remove('hidden');
+            btn.style.display = 'none';
+            loading.classList.remove('hidden');
 
             try {
-                const response = await fetch('/api/', {
+                // ভেরসেল ক্যাশে এড়াতে আমরা একটি র্যান্ডম কুয়েরি প্যারামিটার যোগ করছি
+                const response = await fetch('/api/?t=' + new Date().getTime(), {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ number: num })
@@ -53,17 +56,17 @@
                 const res = await response.json();
 
                 if(res.status === "success") {
-                    log.innerHTML = "> Handshake Successful. Redirecting to Real Database...";
-                    // সরাসরি গেটওয়ে লিঙ্কে পাঠিয়ে দিবে
-                    setTimeout(() => {
-                        window.location.href = res.gateway_url;
-                    }, 1000);
+                    // সরাসরি গেটওয়ে লিঙ্কে পাঠিয়ে দিবে যেখানে আসল নাম আসবে
+                    window.location.href = res.url;
                 } else {
-                    btn.innerText = "GATEWAY ERROR";
-                    log.innerText = "> Connection Rejected by Server.";
+                    alert("Gateway is busy. Try again.");
+                    btn.style.display = 'block';
+                    loading.classList.add('hidden');
                 }
             } catch (e) {
-                btn.innerText = "FAILED";
+                alert("Connection failed.");
+                btn.style.display = 'block';
+                loading.classList.add('hidden');
             }
         }
     </script>
