@@ -15,22 +15,23 @@ class handler(BaseHTTPRequestHandler):
         if target_num.startswith("88"):
             target_num = target_num[2:]
 
-        # SSLCommerz স্যান্ডবক্স ক্রেডেনশিয়াল
+        # SSLCommerz Sandbox Credentials
         STORE_ID = "testbox"
         STORE_PASS = "testbox@ssl"
         
         try:
+            # সরাসরি API কল (কোনো থার্ড-পার্টি লাইব্রেরি ছাড়া)
             api_url = "https://sandbox.sslcommerz.com/gwprocess/v4/api.php"
             payload = {
                 'store_id': STORE_ID,
                 'store_passwd': STORE_PASS,
                 'total_amount': '10.00',
                 'currency': 'BDT',
-                'tran_id': str(uuid.uuid4())[:10],
+                'tran_id': str(uuid.uuid4())[:12],
                 'success_url': 'https://google.com',
                 'fail_url': 'https://google.com',
                 'cancel_url': 'https://google.com',
-                'cus_name': 'REAL_IDENTITY_CHECK',
+                'cus_name': 'USER_CHECK',
                 'cus_email': 'verify@nexus.com',
                 'cus_phone': target_num,
                 'cus_add1': 'Dhaka',
@@ -51,10 +52,10 @@ class handler(BaseHTTPRequestHandler):
                     "url": res_data.get('GatewayPageURL')
                 }
             else:
-                final_output = {"status": "error", "message": "SSL_REJECTED"}
+                final_output = {"status": "error", "message": "GATEWAY_REJECTED"}
 
-        except:
-            final_output = {"status": "error", "message": "SERVER_TIMEOUT"}
+        except Exception as e:
+            final_output = {"status": "error", "message": str(e)}
 
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
