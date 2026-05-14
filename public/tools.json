@@ -5,12 +5,5 @@
     "link": "/tools/phone-lookup.html",
     "icon": "fas fa-phone-alt",
     "color": "blue"
-  },
-  {
-    "name": "IP Tracker",
-    "description": "আইপি অ্যাড্রেস থেকে ইউজার ডিটেইলস বের করুন।",
-    "link": "/tools/ip-tracker.html",
-    "icon": "fas fa-network-wired",
-    "color": "purple"
   }
 ]
