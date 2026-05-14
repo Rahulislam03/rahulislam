@@ -2,102 +2,36 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SSLCommerz Secure - Identity Lookup</title>
+    <title>SSLCommerz - Real Gateway Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { background: #f8fafc; color: #1e293b; font-family: 'Inter', sans-serif; }
-        .ssl-header { background: #0056b3; border-bottom: 4px solid #ff6a00; }
-        .terminal-box { background: #0f172a; border-left: 4px solid #ff6a00; font-family: 'Courier New', monospace; }
-        .btn-ssl { background: #ff6a00; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .btn-ssl:hover { background: #e65c00; transform: translateY(-1px); }
-        .shimmer { animation: shimmer 1.5s infinite linear; background: linear-gradient(to right, #f1f5f9 4%, #e2e8f0 25%, #f1f5f9 36%); background-size: 1000px 100%; }
-        @keyframes shimmer { 0% { background-position: -1000px 0; } 100% { background-position: 1000px 0; } }
-    </style>
 </head>
-<body class="bg-gray-50 flex flex-col items-center min-h-screen">
+<body class="bg-slate-50 p-6 flex flex-col items-center">
+    <div class="max-w-md w-full bg-white p-8 rounded-2xl shadow-xl border border-slate-200">
+        <h1 class="text-2xl font-black italic text-blue-700 mb-2">SSL<span class="text-orange-500">Commerz</span></h1>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-8">Direct Merchant API Integration</p>
 
-    <header class="w-full ssl-header p-4 mb-10 shadow-lg">
-        <div class="max-w-md mx-auto flex justify-between items-center">
-            <h1 class="text-white text-xl font-black italic">SSL<span class="text-orange-400">Commerz</span></h1>
-            <span class="text-[9px] bg-white/20 text-white px-2 py-1 rounded font-bold uppercase">v4.2 Secure Node</span>
-        </div>
-    </header>
-
-    <div class="w-full max-w-md px-4">
-        <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
-            <p class="text-[10px] text-gray-400 font-bold uppercase mb-4 tracking-widest text-center">Authorized Merchant Access</p>
-            
-            <div class="space-y-4">
-                <div class="relative">
-                    <input id="num" type="text" placeholder="01XXXXXXXXX" class="w-full bg-gray-50 border-2 border-gray-100 p-4 rounded-xl text-xl font-mono focus:border-orange-400 outline-none transition-all">
-                </div>
-                
-                <button onclick="executeSecureLookup()" id="btn" class="w-full btn-ssl py-4 rounded-xl font-black text-white uppercase text-xs tracking-[0.2em] shadow-lg shadow-orange-500/20">
-                    Verify Identity
-                </button>
-            </div>
+        <div class="space-y-4">
+            <input id="num" type="text" placeholder="017XXXXXXXX" class="w-full border-2 border-slate-100 p-4 rounded-xl font-mono text-lg focus:border-orange-500 outline-none">
+            <button onclick="connectGateway()" id="btn" class="w-full bg-orange-500 py-4 rounded-xl font-bold text-white uppercase text-xs tracking-widest shadow-lg hover:bg-orange-600 transition-all">
+                Access Real-Time Database
+            </button>
         </div>
 
-        <div id="terminal" class="hidden mt-6 terminal-box p-4 rounded-lg shadow-inner">
-            <div id="logs" class="text-[10px] text-orange-400/80 space-y-1"></div>
-        </div>
-
-        <div id="result" class="hidden mt-6 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div class="bg-white p-8 rounded-2xl shadow-2xl border-t-8 border-orange-500 relative overflow-hidden">
-                <div class="absolute top-0 right-0 p-2">
-                    <span id="res-kyc" class="text-[8px] font-bold px-2 py-1 rounded-full"></span>
-                </div>
-                
-                <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">MFS Verified Account Name</p>
-                <h2 id="res-name" class="text-2xl font-black text-slate-800 tracking-tighter uppercase mb-6"></h2>
-                
-                <div class="grid grid-cols-2 gap-4 border-t border-gray-50 pt-6">
-                    <div>
-                        <span class="text-[8px] text-gray-400 block uppercase">Network Provider</span>
-                        <span id="res-op" class="text-sm font-bold text-slate-700"></span>
-                    </div>
-                    <div>
-                        <span class="text-[8px] text-gray-400 block uppercase">SSL Transaction ID</span>
-                        <span id="res-tran" class="text-[10px] font-mono text-orange-600 font-bold"></span>
-                    </div>
-                </div>
-            </div>
-            <p class="text-[8px] text-center text-gray-400 uppercase tracking-widest mt-4">Security Protocol: PCI-DSS Level 1 Verified Infrastructure</p>
+        <div id="status-box" class="hidden mt-8 p-4 bg-slate-900 rounded-lg font-mono text-[10px] text-green-500">
+            <p id="log-text">> Initializing SSL Handshake...</p>
         </div>
     </div>
 
     <script>
-        const scanSteps = [
-            "> SSL Handshake Initialized...",
-            "> Connection to SSLCommerz Gateway v4.2...",
-            "> Routing through Merchant Node: NEXUS_786...",
-            "> Intercepting MFS Identity Packets...",
-            "> Decrypting bKash/Nagad KYC Registry...",
-            "> Identity Resolution Successful."
-        ];
-
-        async function executeSecureLookup() {
+        async function connectGateway() {
             const num = document.getElementById('num').value;
-            const terminal = document.getElementById('terminal');
-            const logsBox = document.getElementById('logs');
-            const resultDiv = document.getElementById('result');
-            const btn = document.getElementById('btn');
+            const statusBox = document.getElementById('status-box');
+            const logText = document.getElementById('log-text');
 
             if(!num) return;
 
-            // Start UI Process
-            btn.innerText = "AUTHENTICATING...";
-            terminal.classList.remove('hidden');
-            resultDiv.classList.add('hidden');
-            logsBox.innerHTML = "";
-
-            // Terminal Animation
-            for(let step of scanSteps) {
-                let p = document.createElement('p');
-                p.innerText = step;
-                logsBox.appendChild(p);
-                await new Promise(r => setTimeout(r, 500));
-            }
+            statusBox.classList.remove('hidden');
+            logText.innerText = "> Connecting to SSLCommerz Live Nodes...";
 
             try {
                 const response = await fetch('/api/', {
@@ -108,25 +42,18 @@
                 const res = await response.json();
 
                 if(res.status === "success") {
+                    logText.innerHTML += `<br>> Session Created: ${res.data.session_id}`;
+                    logText.innerHTML += `<br>> Redirecting to Secure Identity Node...`;
+                    
+                    // এখানে ইউজারকে সরাসরি গেটওয়ে পেজে পাঠিয়ে দেওয়া হবে যেখানে সে রিয়েল নাম দেখতে পাবে
                     setTimeout(() => {
-                        terminal.classList.add('hidden');
-                        resultDiv.classList.remove('hidden');
-                        
-                        document.getElementById('res-name').innerText = res.ssl_payload.cus_name;
-                        document.getElementById('res-op').innerText = res.ssl_payload.operator;
-                        document.getElementById('res-tran').innerText = res.ssl_payload.tran_id;
-                        
-                        const kyc = document.getElementById('res-kyc');
-                        kyc.innerText = res.ssl_payload.kyc_verification;
-                        kyc.className = res.ssl_payload.kyc_verification === "VERIFIED_MERCHANT" 
-                            ? "text-[8px] font-bold px-2 py-1 rounded-full bg-green-100 text-green-600"
-                            : "text-[8px] font-bold px-2 py-1 rounded-full bg-orange-100 text-orange-600";
-                        
-                        btn.innerText = "VERIFY IDENTITY";
-                    }, 800);
+                        window.location.href = res.data.gateway_url;
+                    }, 1500);
+                } else {
+                    logText.innerHTML += `<br><span class="text-red-500">> Error: ${res.message}</span>`;
                 }
             } catch (e) {
-                btn.innerText = "GATEWAY_TIMEOUT";
+                logText.innerHTML += `<br><span class="text-red-500">> Gateway Connection Failed.</span>`;
             }
         }
     </script>
