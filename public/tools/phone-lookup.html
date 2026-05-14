@@ -3,103 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Phone OSINT - Nexus</title>
+    <title>Nexus Intelligence - Deep Search</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); }
-        .loading-ring { border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(59, 130, 246, 0.2); }
+        .spin { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="bg-[#0f172a] text-white min-h-screen flex flex-col items-center p-6">
-    <div class="w-full max-w-lg">
-        <header class="text-center mb-8">
-            <h1 class="text-3xl font-extrabold text-blue-500 mb-2">Nexus Intelligence</h1>
-            <p class="text-gray-400 text-sm">রিয়েল-টাইম আইডেন্টিটি এবং ক্যারিয়ার লুকআপ</p>
-        </header>
+<body class="bg-[#0f172a] text-white min-h-screen p-4 flex flex-col items-center font-sans">
 
-        <div class="glass p-6 rounded-3xl border border-blue-500/20 shadow-2xl">
-            <div class="relative mb-6">
-                <input id="num" type="text" placeholder="+8801XXXXXXXXX" class="w-full bg-[#0f172a] border border-gray-700 p-4 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none text-center text-xl font-mono tracking-widest transition-all">
-            </div>
+    <div class="w-full max-w-md mt-10">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-black text-blue-500 tracking-tighter">NEXUS OSINT</h1>
+            <p class="text-gray-400 text-xs uppercase tracking-widest mt-2">Advanced Identity & Carrier Tracking</p>
+        </div>
+
+        <div class="glass p-6 rounded-[2rem] shadow-2xl mb-6">
+            <input id="num" type="text" placeholder="+8801XXXXXXXXX" class="w-full bg-[#0f172a] border border-gray-700 p-5 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none text-center text-2xl font-mono mb-4 transition-all">
             
-            <button onclick="deepSearch()" id="search-btn" class="w-full bg-blue-600 hover:bg-blue-700 p-4 rounded-2xl font-bold transition-all flex items-center justify-center space-x-2">
-                <i class="fas fa-microchip"></i>
-                <span id="btn-text">Deep Intelligence Search</span>
+            <button onclick="startSearch()" id="search-btn" class="w-full bg-blue-600 hover:bg-blue-700 p-5 rounded-2xl font-bold transition-all flex items-center justify-center space-x-3 group">
+                <i class="fas fa-satellite-dish group-hover:animate-pulse"></i>
+                <span id="btn-text">DEEP SCAN NUMBER</span>
             </button>
         </div>
 
-        <!-- ফলাফল ড্যাশবোর্ড -->
-        <div id="result-dashboard" class="mt-8 space-y-4 hidden animate-fade-in">
+        <div id="result" class="hidden space-y-4 animate-fade-in">
             
-            <!-- মালিকের নাম এবং স্ট্যাটাস -->
-            <div class="glass p-6 rounded-3xl border border-blue-500/30 text-center">
-                <div class="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-id-card text-2xl text-blue-500"></i>
+            <div class="glass p-8 rounded-[2rem] text-center border-green-500/30">
+                <p class="text-[10px] text-blue-400 font-bold uppercase mb-2">Registry Name</p>
+                <h2 id="res-owner" class="text-2xl font-bold text-white mb-1">Searching...</h2>
+                <p id="res-loc" class="text-gray-400 text-xs"></p>
+                
+                <div id="tc-helper" class="mt-5 p-4 bg-blue-500/10 rounded-2xl border border-blue-500/20 hidden">
+                    <p class="text-[10px] mb-3">নাম সরাসরি না আসলে নিচের লিঙ্কে চেক করুন:</p>
+                    <a id="tc-link" target="_blank" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition">
+                        Check via Truecaller Registry
+                    </a>
                 </div>
-                <p class="text-xs text-blue-400 font-bold uppercase tracking-widest mb-1">Owner Identity</p>
-                <h2 id="res-owner" class="text-2xl font-extrabold text-white">Searching...</h2>
-                <p id="res-loc-top" class="text-gray-400 text-sm mt-1"></p>
             </div>
 
-            <!-- গ্রিড ইনফো (অপারেটর ও টাইপ) -->
             <div class="grid grid-cols-2 gap-4">
-                <div class="glass p-4 rounded-2xl border border-gray-800">
-                    <span class="text-xs text-gray-500 uppercase block mb-1">Operator</span>
-                    <span id="res-car" class="font-bold text-blue-400 italic"></span>
+                <div class="glass p-5 rounded-3xl">
+                    <span class="text-[10px] text-gray-500 uppercase block mb-1">Operator</span>
+                    <span id="res-car" class="font-bold text-blue-400 text-sm"></span>
                 </div>
-                <div class="glass p-4 rounded-2xl border border-gray-800">
-                    <span class="text-xs text-gray-500 uppercase block mb-1">Line Type</span>
-                    <span id="res-type" class="font-bold text-purple-400"></span>
-                </div>
-            </div>
-
-            <!-- অতিরিক্ত তথ্য (ফরম্যাট ও ভ্যালিডিটি) -->
-            <div class="glass p-5 rounded-3xl border border-gray-800 space-y-3">
-                <div class="flex justify-between items-center text-sm">
-                    <span class="text-gray-400">International Format:</span>
-                    <span id="res-fmt" class="font-mono text-blue-300"></span>
-                </div>
-                <div class="flex justify-between items-center text-sm">
-                    <span class="text-gray-400">Account Status:</span>
-                    <span id="res-val" class="px-2 py-1 bg-green-500/10 text-green-500 rounded text-xs font-bold uppercase"></span>
+                <div class="glass p-5 rounded-3xl">
+                    <span class="text-[10px] text-gray-500 uppercase block mb-1">Line Type</span>
+                    <span id="res-type" class="font-bold text-purple-400 text-sm"></span>
                 </div>
             </div>
 
-            <!-- সোশ্যাল মিডিয়া এবং OSINT নেটওয়ার্ক -->
-            <div class="glass p-6 rounded-3xl border border-gray-800 space-y-4">
-                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest">OSINT Network Status</h3>
-                <div class="space-y-3">
-                    <div class="flex items-center justify-between p-3 bg-[#0f172a] rounded-xl border border-gray-800 hover:border-blue-500/30 transition-all">
-                        <span class="flex items-center"><i class="fab fa-whatsapp text-green-500 mr-3 text-lg"></i> WhatsApp</span>
-                        <span class="text-xs text-green-500 font-bold">Linked</span>
-                    </div>
-                    <div class="flex items-center justify-between p-3 bg-[#0f172a] rounded-xl border border-gray-800 hover:border-blue-500/30 transition-all">
-                        <span class="flex items-center"><i class="fab fa-facebook text-blue-500 mr-3 text-lg"></i> Facebook Search</span>
-                        <span class="text-xs text-blue-500 font-bold">Active</span>
-                    </div>
-                    <div class="flex items-center justify-between p-3 bg-[#0f172a] rounded-xl border border-gray-800 hover:border-blue-500/30 transition-all">
-                        <span class="flex items-center"><i class="fas fa-at text-red-400 mr-3"></i> Intelligence Registry</span>
-                        <span class="text-xs text-gray-500 italic">Searching database...</span>
-                    </div>
+            <div class="glass p-6 rounded-[2rem] space-y-4">
+                <div class="flex justify-between border-b border-gray-800 pb-2 text-sm">
+                    <span class="text-gray-500">Intl Format</span>
+                    <span id="res-fmt" class="font-mono"></span>
+                </div>
+                <div class="flex justify-between border-b border-gray-800 pb-2 text-sm">
+                    <span class="text-gray-500">Timezone</span>
+                    <span id="res-tz" class="text-yellow-500"></span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Network Status</span>
+                    <span id="res-val" class="text-green-500 font-bold"></span>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        async function deepSearch() {
+        async function startSearch() {
             const num = document.getElementById('num').value;
             const btn = document.getElementById('search-btn');
             const btnText = document.getElementById('btn-text');
-            const dashboard = document.getElementById('result-dashboard');
-            
-            if(!num) return alert("দয়া করে নম্বরটি লিখুন!");
+            const resDiv = document.getElementById('result');
 
-            btnText.innerHTML = '<div class="flex items-center justify-center space-x-2"><div class="loading-ring"></div> <span>Accessing Database...</span></div>';
+            if(!num) return alert("Number please!");
+
+            btnText.innerText = "Scanning Registry...";
             btn.disabled = true;
 
             try {
@@ -109,31 +91,35 @@
                     body: JSON.stringify({ number: num })
                 });
                 const res = await response.json();
-                
+
                 if(res.status === "success") {
-                    dashboard.classList.remove('hidden');
-                    
-                    // ম্যাপিং ডেটা
+                    resDiv.classList.remove('hidden');
                     document.getElementById('res-owner').innerText = res.data.owner;
-                    document.getElementById('res-loc-top').innerText = res.data.location;
+                    document.getElementById('res-loc').innerText = res.data.location;
                     document.getElementById('res-car').innerText = res.data.carrier;
                     document.getElementById('res-type').innerText = res.data.type;
-                    document.getElementById('res-fmt').innerText = res.data.format;
+                    document.getElementById('res-fmt').innerText = res.data.intl;
+                    document.getElementById('res-tz').innerText = res.data.tz;
                     document.getElementById('res-val').innerText = res.data.valid;
                     
-                    // স্মুথ স্ক্রল
-                    window.scrollTo({ top: dashboard.offsetTop - 20, behavior: 'smooth' });
-                } else {
-                    alert(res.message || "কোনো তথ্য পাওয়া যায়নি!");
+                    // Truecaller Helper Logic
+                    if(res.data.owner.includes("Hidden")) {
+                        document.getElementById('tc-helper').classList.remove('hidden');
+                        document.getElementById('tc-link').href = res.data.tc_url;
+                    } else {
+                        document.getElementById('tc-helper').classList.add('hidden');
+                    }
+
+                    window.scrollTo({ top: resDiv.offsetTop - 20, behavior: 'smooth' });
                 }
             } catch (err) {
-                alert("সার্ভার এরর! গিটহাবে আপনার API Key এবং requirements.txt চেক করুন।");
+                alert("API Error!");
             } finally {
-                btnText.innerText = "Deep Intelligence Search";
+                btnText.innerText = "DEEP SCAN NUMBER";
                 btn.disabled = false;
             }
         }
     </script>
 </body>
-                    </html>
+    </html>
     
