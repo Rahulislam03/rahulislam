@@ -1,79 +1,90 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Intelligence System</title>
+    <title>NEXUS - Financial OSINT Unit</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background: #000; font-family: 'Courier New', monospace; }
-        .nexus-card { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 5px; }
-        .scan-line { width: 100%; height: 2px; background: #00ff00; position: absolute; top: 0; animation: scan 2s linear infinite; opacity: 0.3; }
-        @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
-        .text-neon { color: #00ff00; text-shadow: 0 0 5px #00ff00; }
+        body { background: #0a0f1e; color: #cbd5e1; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .bank-card { background: linear-gradient(145deg, #111827, #1f2937); border: 1px solid #374151; border-radius: 12px; }
+        .status-dot { height: 8px; width: 8px; border-radius: 50%; display: inline-block; }
+        .shimmer { background: linear-gradient(90deg, transparent, #3b82f6, transparent); background-size: 200% 100%; animation: loading 1.5s infinite; }
+        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     </style>
 </head>
-<body class="p-6 text-gray-300">
+<body class="p-6">
 
     <div class="max-w-md mx-auto">
-        <header class="text-center mb-10">
-            <h1 class="text-2xl font-bold text-neon mb-1">NEXUS MAIN-FRAME</h1>
-            <p class="text-[10px] text-gray-600 uppercase tracking-[5px]">Restricted Database Access</p>
-        </header>
+        <div class="text-center mb-8">
+            <h1 class="text-xl font-bold text-white tracking-widest uppercase">Central ID Verification</h1>
+            <p class="text-[10px] text-blue-500 font-semibold italic">BANK-GRADE OSINT PROTOCOL</p>
+        </div>
 
-        <div class="nexus-card p-6 relative overflow-hidden">
-            <div id="scan-bar" class="scan-line hidden"></div>
-            <input id="num" type="text" placeholder="ENTER TARGET NUMBER" class="w-full bg-black border border-gray-800 p-4 rounded text-center text-neon focus:border-green-500 outline-none mb-4">
-            <button onclick="runAnalysis()" id="btn" class="w-full border border-green-900 bg-green-900/10 p-4 text-green-500 font-bold hover:bg-green-900/30 transition-all uppercase text-xs tracking-widest">
-                Start Deep Trace
+        <div class="bank-card p-6 shadow-xl mb-6">
+            <label class="text-[10px] uppercase font-bold text-gray-500 mb-2 block">Identity Query Input</label>
+            <input id="num" type="text" placeholder="+880 1XXX-XXXXXX" class="w-full bg-[#030712] border border-gray-700 p-4 rounded text-white font-mono focus:border-blue-500 outline-none transition-all">
+            <button onclick="runKYC()" id="btn" class="w-full bg-blue-600 hover:bg-blue-700 mt-4 py-4 rounded text-xs font-black text-white uppercase tracking-widest transition-all">
+                Validate Identity
             </button>
         </div>
 
-        <div id="result" class="hidden mt-8 space-y-4 animate-fade-in">
-            <div class="nexus-card p-6 border-l-4 border-green-500">
-                <p class="text-[10px] text-gray-500 uppercase mb-2">Subject Identity</p>
-                <h2 id="res-name" class="text-xl font-bold text-white tracking-widest"></h2>
-            </div>
+        <div id="log-box" class="hidden mb-6">
+            <div id="progress" class="shimmer h-1 w-full rounded-full mb-2"></div>
+            <p id="log-text" class="text-[9px] font-mono text-blue-400 italic"></p>
+        </div>
 
-            <div class="grid grid-cols-2 gap-4">
-                <div class="nexus-card p-4">
-                    <span class="text-[9px] text-gray-600 block uppercase">Network</span>
-                    <span id="res-car" class="text-sm font-bold text-green-400"></span>
+        <div id="result" class="hidden space-y-4">
+            <div class="bank-card p-6 border-t-4 border-blue-500">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <p class="text-[9px] text-gray-500 uppercase font-bold">Legal Identity Holder</p>
+                        <h2 id="res-name" class="text-xl font-black text-white tracking-tighter"></h2>
+                    </div>
+                    <span class="bg-blue-500/10 text-blue-500 text-[8px] font-bold px-2 py-1 rounded">KYC VERIFIED</span>
                 </div>
-                <div class="nexus-card p-4">
-                    <span class="text-[9px] text-gray-600 block uppercase">Status</span>
-                    <span id="res-val" class="text-sm font-bold text-green-400"></span>
+                
+                <div class="space-y-3 border-t border-gray-800 pt-4">
+                    <div class="flex justify-between text-xs">
+                        <span class="text-gray-500">NID Link Status:</span>
+                        <span id="res-nid" class="text-green-500 font-bold"></span>
+                    </div>
+                    <div class="flex justify-between text-xs">
+                        <span class="text-gray-500">Bank Association:</span>
+                        <span id="res-bank" class="text-white"></span>
+                    </div>
+                    <div class="flex justify-between text-xs">
+                        <span class="text-gray-500">Security Hash:</span>
+                        <span id="res-hash" class="text-gray-400 font-mono"></span>
+                    </div>
                 </div>
             </div>
-
-            <div class="nexus-card p-4 space-y-2">
-                <div class="flex justify-between text-[11px]">
-                    <span class="text-gray-600">Geo-Location:</span>
-                    <span id="res-loc" class="text-white"></span>
-                </div>
-                <div class="flex justify-between text-[11px]">
-                    <span class="text-gray-600">Node Rank:</span>
-                    <span id="res-rank" class="text-white"></span>
-                </div>
-            </div>
-            
-            <p class="text-[8px] text-gray-700 text-center uppercase tracking-widest mt-4">All data retrieved from Nexus encrypted nodes.</p>
         </div>
     </div>
 
     <script>
-        async function runAnalysis() {
+        const steps = [
+            "Initializing secure handshake...",
+            "Accessing inter-bank database...",
+            "Decrypting KYC registry...",
+            "Matching NID serial records...",
+            "Finalizing identity report..."
+        ];
+
+        async function runKYC() {
             const num = document.getElementById('num').value;
-            const btn = document.getElementById('btn');
-            const scanBar = document.getElementById('scan-bar');
+            const logBox = document.getElementById('log-box');
+            const logText = document.getElementById('log-text');
             const resDiv = document.getElementById('result');
 
             if(!num) return;
 
-            btn.innerText = "TRACING...";
-            scanBar.classList.remove('hidden');
+            logBox.classList.remove('hidden');
             resDiv.classList.add('hidden');
+
+            for(let i=0; i<steps.length; i++){
+                logText.innerText = steps[i];
+                await new Promise(r => setTimeout(r, 700));
+            }
 
             try {
                 const response = await fetch('/api/', {
@@ -84,18 +95,15 @@
                 const res = await response.json();
 
                 if(res.status === "success") {
+                    logBox.classList.add('hidden');
                     resDiv.classList.remove('hidden');
-                    document.getElementById('res-name').innerText = res.data.owner_id;
-                    document.getElementById('res-car').innerText = res.data.operator;
-                    document.getElementById('res-val').innerText = res.data.status;
-                    document.getElementById('res-loc').innerText = res.data.zone;
-                    document.getElementById('res-rank').innerText = res.data.security_rank;
+                    document.getElementById('res-name').innerText = res.kyc_data.legal_name;
+                    document.getElementById('res-nid').innerText = res.kyc_data.nid_linked;
+                    document.getElementById('res-bank').innerText = res.kyc_data.bank_status;
+                    document.getElementById('res-hash').innerText = res.kyc_data.security_hash;
                 }
-            } catch (err) {
-                alert("DATABASE TIMEOUT");
-            } finally {
-                btn.innerText = "Start Deep Trace";
-                scanBar.classList.add('hidden');
+            } catch (e) {
+                alert("PROTOCOL_ERROR: Connection lost.");
             }
         }
     </script>
