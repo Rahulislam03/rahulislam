@@ -1,7 +1,10 @@
 {
+  "version": 2,
+  "cleanUrls": true,
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index.py" },
     { "source": "/tools/(.*)", "destination": "/tools/$1" },
-    { "source": "/(.*)", "destination": "/public/$1" }
+    { "source": "/", "destination": "/public/index.html" },
+    { "source": "/tools.json", "destination": "/public/tools.json" }
   ]
 }
