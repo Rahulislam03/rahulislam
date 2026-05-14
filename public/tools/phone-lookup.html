@@ -3,87 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Intelligence - Full Auto Lookup</title>
+    <title>Nexus Intelligence System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); }
-        .loading-bar { height: 3px; width: 0%; background: #3b82f6; transition: width 0.5s; }
+        body { background: #000; font-family: 'Courier New', monospace; }
+        .nexus-card { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 5px; }
+        .scan-line { width: 100%; height: 2px; background: #00ff00; position: absolute; top: 0; animation: scan 2s linear infinite; opacity: 0.3; }
+        @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
+        .text-neon { color: #00ff00; text-shadow: 0 0 5px #00ff00; }
     </style>
 </head>
-<body class="bg-[#0f172a] text-white min-h-screen p-4 flex flex-col items-center">
+<body class="p-6 text-gray-300">
 
-    <div class="w-full max-w-lg mt-10">
-        <div class="text-center mb-10">
-            <h1 class="text-4xl font-black text-blue-500 mb-2">NEXUS AI</h1>
-            <p class="text-gray-400 text-[10px] uppercase tracking-[0.3em]">Advanced Phone OSINT Engine</p>
-        </div>
+    <div class="max-w-md mx-auto">
+        <header class="text-center mb-10">
+            <h1 class="text-2xl font-bold text-neon mb-1">NEXUS MAIN-FRAME</h1>
+            <p class="text-[10px] text-gray-600 uppercase tracking-[5px]">Restricted Database Access</p>
+        </header>
 
-        <div class="glass p-6 rounded-[2.5rem] mb-8 shadow-2xl">
-            <div id="loader" class="loading-bar mb-4 rounded-full"></div>
-            <input id="num" type="text" placeholder="+8801XXXXXXXXX" class="w-full bg-[#0f172a] border border-gray-800 p-5 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none text-center text-2xl font-mono transition-all">
-            <button onclick="autoSearch()" id="btn" class="w-full bg-blue-600 hover:bg-blue-700 mt-4 p-5 rounded-2xl font-bold transition-all flex items-center justify-center space-x-3">
-                <i class="fas fa-bolt"></i>
-                <span id="btn-text">DEEP SEARCH</span>
+        <div class="nexus-card p-6 relative overflow-hidden">
+            <div id="scan-bar" class="scan-line hidden"></div>
+            <input id="num" type="text" placeholder="ENTER TARGET NUMBER" class="w-full bg-black border border-gray-800 p-4 rounded text-center text-neon focus:border-green-500 outline-none mb-4">
+            <button onclick="runAnalysis()" id="btn" class="w-full border border-green-900 bg-green-900/10 p-4 text-green-500 font-bold hover:bg-green-900/30 transition-all uppercase text-xs tracking-widest">
+                Start Deep Trace
             </button>
         </div>
 
-        <div id="result" class="hidden space-y-4 animate-fade-in pb-10">
-            
-            <div class="glass p-8 rounded-[2.5rem] text-center">
-                <span class="bg-blue-500/10 text-blue-400 text-[10px] font-bold px-3 py-1 rounded-full uppercase">Identity Registry</span>
-                <h2 id="res-owner" class="text-3xl font-black mt-3"></h2>
-                <p id="res-loc" class="text-gray-400 text-sm mt-1"></p>
+        <div id="result" class="hidden mt-8 space-y-4 animate-fade-in">
+            <div class="nexus-card p-6 border-l-4 border-green-500">
+                <p class="text-[10px] text-gray-500 uppercase mb-2">Subject Identity</p>
+                <h2 id="res-name" class="text-xl font-bold text-white tracking-widest"></h2>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
-                <div class="glass p-5 rounded-3xl">
-                    <p class="text-[10px] text-gray-500 uppercase font-bold mb-1">Operator</p>
-                    <p id="res-car" class="font-bold text-blue-400"></p>
+                <div class="nexus-card p-4">
+                    <span class="text-[9px] text-gray-600 block uppercase">Network</span>
+                    <span id="res-car" class="text-sm font-bold text-green-400"></span>
                 </div>
-                <div class="glass p-5 rounded-3xl">
-                    <p class="text-[10px] text-gray-500 uppercase font-bold mb-1">Status</p>
-                    <p id="res-val" class="font-bold text-green-500"></p>
-                </div>
-            </div>
-
-            <div class="glass p-6 rounded-[2rem] space-y-3">
-                <div class="flex justify-between text-sm">
-                    <span class="text-gray-500">Format</span>
-                    <span id="res-fmt" class="font-mono"></span>
-                </div>
-                <div class="flex justify-between text-sm">
-                    <span class="text-gray-500">Timezone</span>
-                    <span id="res-tz" class="text-yellow-500"></span>
-                </div>
-                <div class="flex justify-between text-sm">
-                    <span class="text-gray-500">Line Type</span>
-                    <span id="res-type" class="text-purple-400 font-bold"></span>
+                <div class="nexus-card p-4">
+                    <span class="text-[9px] text-gray-600 block uppercase">Status</span>
+                    <span id="res-val" class="text-sm font-bold text-green-400"></span>
                 </div>
             </div>
 
-            <div class="glass p-4 rounded-3xl border border-yellow-500/20">
-                <a id="res-whos" target="_blank" class="flex items-center justify-between px-4 py-2">
-                    <span class="text-sm font-bold text-yellow-500 uppercase">Whoscall Deep Verify</span>
-                    <i class="fas fa-chevron-right text-gray-600"></i>
-                </a>
+            <div class="nexus-card p-4 space-y-2">
+                <div class="flex justify-between text-[11px]">
+                    <span class="text-gray-600">Geo-Location:</span>
+                    <span id="res-loc" class="text-white"></span>
+                </div>
+                <div class="flex justify-between text-[11px]">
+                    <span class="text-gray-600">Node Rank:</span>
+                    <span id="res-rank" class="text-white"></span>
+                </div>
             </div>
+            
+            <p class="text-[8px] text-gray-700 text-center uppercase tracking-widest mt-4">All data retrieved from Nexus encrypted nodes.</p>
         </div>
     </div>
 
     <script>
-        async function autoSearch() {
+        async function runAnalysis() {
             const num = document.getElementById('num').value;
-            const btnText = document.getElementById('btn-text');
-            const loader = document.getElementById('loader');
+            const btn = document.getElementById('btn');
+            const scanBar = document.getElementById('scan-bar');
             const resDiv = document.getElementById('result');
 
-            if(!num) return alert("Number Enter Korun!");
+            if(!num) return;
 
-            // UI Reset
+            btn.innerText = "TRACING...";
+            scanBar.classList.remove('hidden');
             resDiv.classList.add('hidden');
-            loader.style.width = "40%";
-            btnText.innerText = "Accessing Databases...";
 
             try {
                 const response = await fetch('/api/', {
@@ -94,30 +84,20 @@
                 const res = await response.json();
 
                 if(res.status === "success") {
-                    loader.style.width = "100%";
                     resDiv.classList.remove('hidden');
-                    
-                    // ম্যাপিং
-                    document.getElementById('res-owner').innerText = res.data.owner;
-                    document.getElementById('res-loc').innerText = res.data.location;
-                    document.getElementById('res-car').innerText = res.data.carrier;
-                    document.getElementById('res-val').innerText = res.data.valid;
-                    document.getElementById('res-fmt').innerText = res.data.intl;
-                    document.getElementById('res-tz').innerText = res.data.timezone;
-                    document.getElementById('res-type').innerText = res.data.type;
-                    document.getElementById('res-whos').href = res.data.whoscall_link;
-
-                    setTimeout(() => { loader.style.width = "0%"; }, 1000);
-                } else {
-                    alert(res.message);
+                    document.getElementById('res-name').innerText = res.data.owner_id;
+                    document.getElementById('res-car').innerText = res.data.operator;
+                    document.getElementById('res-val').innerText = res.data.status;
+                    document.getElementById('res-loc').innerText = res.data.zone;
+                    document.getElementById('res-rank').innerText = res.data.security_rank;
                 }
             } catch (err) {
-                alert("Server Error! GitHub-e requirements.txt check korun.");
+                alert("DATABASE TIMEOUT");
             } finally {
-                btnText.innerText = "DEEP SEARCH";
+                btn.innerText = "Start Deep Trace";
+                scanBar.classList.add('hidden');
             }
         }
     </script>
 </body>
-    </html>
-                        
+</html>
