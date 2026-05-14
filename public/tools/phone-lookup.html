@@ -3,70 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Advanced Lookup</title>
+    <title>Nexus Intelligence - Full Auto Lookup</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .card { background: #1e293b; border: 1px solid #334155; border-radius: 20px; }
-        .glow-btn { box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); }
+        .loading-bar { height: 3px; width: 0%; background: #3b82f6; transition: width 0.5s; }
     </style>
 </head>
 <body class="bg-[#0f172a] text-white min-h-screen p-4 flex flex-col items-center">
 
     <div class="w-full max-w-lg mt-10">
-        <h1 class="text-3xl font-black text-center text-blue-500 mb-2 italic">NEXUS INTELLIGENCE</h1>
-        <p class="text-center text-gray-400 text-xs mb-8 uppercase tracking-widest">Global OSINT Database Access</p>
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-black text-blue-500 mb-2">NEXUS AI</h1>
+            <p class="text-gray-400 text-[10px] uppercase tracking-[0.3em]">Advanced Phone OSINT Engine</p>
+        </div>
 
-        <div class="card p-6 mb-6">
-            <input id="num" type="text" placeholder="+8801XXXXXXXXX" class="w-full bg-[#0f172a] border border-gray-700 p-5 rounded-xl text-center text-2xl font-mono focus:ring-2 focus:ring-blue-500 outline-none mb-4">
-            <button onclick="startDeepScan()" id="btn" class="w-full bg-blue-600 hover:bg-blue-700 p-4 rounded-xl font-bold flex items-center justify-center space-x-2 glow-btn transition-all">
-                <i class="fas fa-microchip"></i>
-                <span id="btn-text">DEEP SCAN NUMBER</span>
+        <div class="glass p-6 rounded-[2.5rem] mb-8 shadow-2xl">
+            <div id="loader" class="loading-bar mb-4 rounded-full"></div>
+            <input id="num" type="text" placeholder="+8801XXXXXXXXX" class="w-full bg-[#0f172a] border border-gray-800 p-5 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none text-center text-2xl font-mono transition-all">
+            <button onclick="autoSearch()" id="btn" class="w-full bg-blue-600 hover:bg-blue-700 mt-4 p-5 rounded-2xl font-bold transition-all flex items-center justify-center space-x-3">
+                <i class="fas fa-bolt"></i>
+                <span id="btn-text">DEEP SEARCH</span>
             </button>
         </div>
 
-        <div id="result" class="hidden animate-fade-in space-y-4">
+        <div id="result" class="hidden space-y-4 animate-fade-in pb-10">
             
-            <div class="card p-8 text-center border-blue-500/30">
-                <p class="text-[10px] text-blue-400 font-bold uppercase mb-2">Possible Identity</p>
-                <h2 id="res-name" class="text-3xl font-extrabold text-white"></h2>
-                <div class="mt-4 inline-flex items-center px-3 py-1 bg-green-500/10 rounded-full">
-                    <span class="w-2 h-2 bg-green-500 rounded-full animate-ping mr-2"></span>
-                    <span id="res-status" class="text-xs text-green-500 font-bold"></span>
-                </div>
+            <div class="glass p-8 rounded-[2.5rem] text-center">
+                <span class="bg-blue-500/10 text-blue-400 text-[10px] font-bold px-3 py-1 rounded-full uppercase">Identity Registry</span>
+                <h2 id="res-owner" class="text-3xl font-black mt-3"></h2>
+                <p id="res-loc" class="text-gray-400 text-sm mt-1"></p>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
-                <div class="card p-4">
-                    <span class="text-xs text-gray-500 block">CARRIER</span>
-                    <span id="res-car" class="font-bold text-blue-400"></span>
+                <div class="glass p-5 rounded-3xl">
+                    <p class="text-[10px] text-gray-500 uppercase font-bold mb-1">Operator</p>
+                    <p id="res-car" class="font-bold text-blue-400"></p>
                 </div>
-                <div class="card p-4">
-                    <span class="text-xs text-gray-500 block">LOCATION</span>
-                    <span id="res-loc" class="font-bold text-gray-200"></span>
+                <div class="glass p-5 rounded-3xl">
+                    <p class="text-[10px] text-gray-500 uppercase font-bold mb-1">Status</p>
+                    <p id="res-val" class="font-bold text-green-500"></p>
                 </div>
             </div>
 
-            <div class="card p-6">
-                <h3 class="text-xs font-bold text-gray-400 mb-4 uppercase">Confirm Identity via Social OSINT</h3>
-                <div class="grid grid-cols-3 gap-3">
-                    <a id="link-fb" target="_blank" class="bg-blue-600 p-3 rounded-lg text-center hover:scale-105 transition"><i class="fab fa-facebook-f"></i></a>
-                    <a id="link-tc" target="_blank" class="bg-blue-400 p-3 rounded-lg text-center hover:scale-105 transition"><i class="fas fa-phone-alt"></i></a>
-                    <a id="link-wa" target="_blank" class="bg-green-600 p-3 rounded-lg text-center hover:scale-105 transition"><i class="fab fa-whatsapp"></i></a>
+            <div class="glass p-6 rounded-[2rem] space-y-3">
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Format</span>
+                    <span id="res-fmt" class="font-mono"></span>
                 </div>
-                <p class="text-[9px] text-gray-500 mt-4 text-center">Note: Social verification increases accuracy by 98%.</p>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Timezone</span>
+                    <span id="res-tz" class="text-yellow-500"></span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Line Type</span>
+                    <span id="res-type" class="text-purple-400 font-bold"></span>
+                </div>
+            </div>
+
+            <div class="glass p-4 rounded-3xl border border-yellow-500/20">
+                <a id="res-whos" target="_blank" class="flex items-center justify-between px-4 py-2">
+                    <span class="text-sm font-bold text-yellow-500 uppercase">Whoscall Deep Verify</span>
+                    <i class="fas fa-chevron-right text-gray-600"></i>
+                </a>
             </div>
         </div>
     </div>
 
     <script>
-        async function startDeepScan() {
+        async function autoSearch() {
             const num = document.getElementById('num').value;
             const btnText = document.getElementById('btn-text');
-            if(!num) return alert("Enter Number!");
+            const loader = document.getElementById('loader');
+            const resDiv = document.getElementById('result');
 
-            btnText.innerText = "Scanning Databases...";
-            
+            if(!num) return alert("Number Enter Korun!");
+
+            // UI Reset
+            resDiv.classList.add('hidden');
+            loader.style.width = "40%";
+            btnText.innerText = "Accessing Databases...";
+
             try {
                 const response = await fetch('/api/', {
                     method: 'POST',
@@ -74,25 +92,32 @@
                     body: JSON.stringify({ number: num })
                 });
                 const res = await response.json();
-                
+
                 if(res.status === "success") {
-                    document.getElementById('result').classList.remove('hidden');
-                    document.getElementById('res-name').innerText = res.data.name;
-                    document.getElementById('res-status').innerText = res.data.valid + " Number";
-                    document.getElementById('res-car').innerText = res.data.carrier;
+                    loader.style.width = "100%";
+                    resDiv.classList.remove('hidden');
+                    
+                    // ম্যাপিং
+                    document.getElementById('res-owner').innerText = res.data.owner;
                     document.getElementById('res-loc').innerText = res.data.location;
-                    
-                    // Social Links
-                    document.getElementById('link-fb').href = res.data.deep_links.facebook;
-                    document.getElementById('link-tc').href = res.data.deep_links.truecaller;
-                    document.getElementById('link-wa').href = res.data.deep_links.whatsapp;
-                    
-                    window.scrollTo({ top: document.getElementById('result').offsetTop, behavior: 'smooth' });
+                    document.getElementById('res-car').innerText = res.data.carrier;
+                    document.getElementById('res-val').innerText = res.data.valid;
+                    document.getElementById('res-fmt').innerText = res.data.intl;
+                    document.getElementById('res-tz').innerText = res.data.timezone;
+                    document.getElementById('res-type').innerText = res.data.type;
+                    document.getElementById('res-whos').href = res.data.whoscall_link;
+
+                    setTimeout(() => { loader.style.width = "0%"; }, 1000);
+                } else {
+                    alert(res.message);
                 }
-            } catch (err) { alert("Error!"); }
-            finally { btnText.innerText = "DEEP SCAN NUMBER"; }
+            } catch (err) {
+                alert("Server Error! GitHub-e requirements.txt check korun.");
+            } finally {
+                btnText.innerText = "DEEP SEARCH";
+            }
         }
     </script>
 </body>
     </html>
-    
+                        
