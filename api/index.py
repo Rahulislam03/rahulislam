@@ -11,44 +11,37 @@ class handler(BaseHTTPRequestHandler):
             data = json.loads(post_data)
             phone = data.get("number", "017XXXXXXXX")
 
-            # স্যান্ডবক্স যদি ডাউন থাকে তবে এটি অটোমেটিক ব্যাকআপ গেটওয়ে ব্যবহার করবে
-            api_url = "https://sandbox.sslcommerz.com/gwprocess/v4/api.php"
+            # AmarPay Sandbox Credentials
+            api_url = "https://sandbox.aamarpay.com/jsonpost.php"
             
             payload = {
-                'store_id': 'test63fe158862908', # একটি সচল স্যান্ডবক্স আইডি
-                'store_passwd': 'test63fe158862908@ssl',
-                'total_amount': '10.00',
-                'currency': 'BDT',
-                'tran_id': f"SSL_{uuid.uuid4().hex[:10].upper()}",
-                'success_url': 'https://google.com',
-                'fail_url': 'https://google.com',
-                'cancel_url': 'https://google.com',
-                'cus_name': 'Tester',
-                'cus_email': 'test@test.com',
-                'cus_phone': phone,
-                'cus_add1': 'Dhaka',
-                'cus_city': 'Dhaka',
-                'cus_country': 'Bangladesh',
-                'shipping_method': 'NO',
-                'product_name': 'ID_Verify',
-                'product_category': 'Service',
-                'product_profile': 'general'
+                "store_id": "amarpaytest",
+                "signature_key": "dbb74894e82415a2f7ff0ec3a97e4183",
+                "cus_name": "Islam Rahul",
+                "cus_email": "rahul@mixveo.com",
+                "cus_phone": phone,
+                "amount": "10.00",
+                "currency": "BDT",
+                "tran_id": f"TXN_{uuid.uuid4().hex[:8].upper()}",
+                "desc": "Identity Verification",
+                "success_url": "https://google.com",
+                "fail_url": "https://google.com",
+                "cancel_url": "https://google.com",
+                "type": "json"
             }
 
-            r = requests.post(api_url, data=payload, timeout=10)
+            r = requests.post(api_url, json=payload, timeout=15)
             res = r.json()
 
-            if res.get('status') == 'SUCCESS':
-                result = {"status": "success", "url": res.get('GatewayPageURL')}
+            if res.get('payment_url'):
+                output = {"status": "success", "url": res.get('payment_url')}
             else:
-                # ফলব্যাক: যদি স্যান্ডবক্স কাজ না করে তবে সরাসরি ডেমো লিঙ্কে পাঠিয়ে দিবে
-                demo_url = f"https://securepay.sslcommerz.com/gwprocess/v4/demo.php"
-                result = {"status": "success", "url": demo_url}
+                output = {"status": "error", "message": "Gateway Busy"}
 
-        except Exception:
-            result = {"status": "error", "message": "Gateway Offline"}
+        except Exception as e:
+            output = {"status": "error", "message": str(e)}
 
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
         self.end_headers()
-        self.wfile.write(json.dumps(result).encode())
+        self.wfile.write(json.dumps(output).encode())
