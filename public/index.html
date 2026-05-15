@@ -3,38 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SSLCommerz Live Node</title>
+    <title>Secure Identity Node</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-900 flex items-center justify-center min-h-screen p-6">
-    <div class="max-w-md w-full bg-white rounded-[2.5rem] p-10 shadow-2xl text-center border-b-8 border-orange-500">
-        <h1 class="text-3xl font-black text-blue-900 italic mb-2">SSL<span class="text-orange-600">Commerz</span></h1>
-        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-10">Direct Merchant Access</p>
+<body class="bg-gray-900 flex items-center justify-center min-h-screen p-6">
+    <div class="max-w-md w-full bg-white rounded-[2.5rem] p-10 shadow-2xl text-center border-b-8 border-purple-600">
+        <h1 class="text-3xl font-black text-gray-800 italic mb-2">Amar<span class="text-purple-600">Pay</span></h1>
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-10">Advanced Verification Node</p>
         
         <input id="phone" type="text" placeholder="01XXXXXXXXX" 
-            class="w-full bg-gray-100 border-2 border-transparent p-5 rounded-2xl text-2xl font-mono font-bold focus:border-orange-500 outline-none text-center mb-6 transition-all">
+            class="w-full bg-gray-100 border-2 border-transparent p-5 rounded-2xl text-2xl font-mono font-bold focus:border-purple-600 outline-none text-center mb-6 transition-all">
         
         <button onclick="start()" id="btn" 
-            class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-5 rounded-2xl shadow-lg active:scale-95 transition-all uppercase tracking-wider">
-            Connect Gateway
+            class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-5 rounded-2xl shadow-lg active:scale-95 transition-all uppercase tracking-wider">
+            Verify Now
         </button>
 
         <div id="loader" class="hidden mt-8 text-center">
-            <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-orange-500"></div>
-            <p class="text-[10px] font-bold text-gray-400 uppercase animate-pulse mt-2">Requesting Secure Session...</p>
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-600 mb-2"></div>
+            <p class="text-[10px] font-bold text-gray-400 uppercase animate-pulse">Establishing Secure Connection...</p>
         </div>
     </div>
 
     <script>
         async function start() {
             const num = document.getElementById('phone').value;
-            if(!num) return alert("Please enter a phone number");
+            if(!num) return alert("Enter Number");
 
             document.getElementById('btn').style.display = 'none';
             document.getElementById('loader').classList.remove('hidden');
 
             try {
-                // ক্যাশ এড়াতে timestamp যোগ করা হয়েছে
                 const res = await fetch('/api?v=' + Date.now(), {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -45,11 +44,11 @@
                 if(data.status === 'success') {
                     window.location.href = data.url;
                 } else {
-                    alert("Gateway Busy. Please try again.");
+                    alert("Gateway busy. Try again.");
                     location.reload();
                 }
             } catch (e) {
-                alert("Network Error");
+                alert("Network connection failed");
                 location.reload();
             }
         }
