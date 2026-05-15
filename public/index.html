@@ -1,44 +1,63 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Tools - Home</title>
+    <title>SSLCommerz Secure Node</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body class="bg-[#0f172a] text-white min-h-screen">
+<body class="bg-gray-900 flex items-center justify-center min-h-screen p-6">
+    <div class="max-w-md w-full bg-white rounded-[2.5rem] p-10 shadow-2xl text-center border-b-8 border-orange-500">
+        <h1 class="text-3xl font-black text-blue-900 italic mb-1">SSL<span class="text-orange-600">Commerz</span></h1>
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-10">Live Verification Gateway</p>
+        
+        <div class="space-y-6">
+            <input id="phone" type="text" placeholder="01XXXXXXXXX" 
+                class="w-full bg-gray-50 border-2 border-gray-100 p-5 rounded-2xl text-2xl font-mono font-bold focus:border-orange-500 outline-none text-center transition-all">
+            
+            <button onclick="startVerification()" id="mainBtn" 
+                class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-5 rounded-2xl shadow-lg transform active:scale-95 transition-all uppercase tracking-wider">
+                Verify Now
+            </button>
+        </div>
 
-    <header class="py-16 text-center">
-        <h1 class="text-5xl font-extrabold text-blue-500 mb-4">NEXUS TOOLKIT</h1>
-        <p class="text-gray-400">আপনার প্রয়োজনীয় টুলটি নিচে থেকে বেছে নিন</p>
-    </header>
-
-    <!-- এই ডিভ-এর ভেতরে অটোমেটিক কার্ড তৈরি হবে -->
-    <main id="tools-container" class="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-6 pb-20">
-        <!-- জাভাস্ক্রিপ্ট এখানে কার্ডগুলো ইনসার্ট করবে -->
-    </main>
+        <div id="status" class="hidden mt-8 text-center">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-orange-500 mb-4"></div>
+            <p class="text-xs font-bold text-gray-500 uppercase animate-pulse">Requesting Secure Session...</p>
+        </div>
+    </div>
 
     <script>
-        // tools.json ফাইল থেকে ডাটা লোড করার ফাংশন
-        async function loadTools() {
-            const response = await fetch('./tools.json');
-            const tools = await response.json();
-            const container = document.getElementById('tools-container');
+        async function startVerification() {
+            const num = document.getElementById('phone').value;
+            if(!num) return alert("Please enter a number");
 
-            container.innerHTML = tools.map(tool => `
-                <div class="bg-[#1e293b] p-8 rounded-2xl border border-gray-800 hover:border-${tool.color}-500 transition-all group">
-                    <div class="text-${tool.color}-500 text-3xl mb-4 group-hover:scale-110 transition-transform">
-                        <i class="${tool.icon}"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-2">${tool.name}</h3>
-                    <p class="text-gray-400 text-sm mb-6">${tool.description}</p>
-                    <a href="${tool.link}" class="inline-block bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg font-semibold transition">ব্যবহার করুন</a>
-                </div>
-            `).join('');
+            document.getElementById('mainBtn').disabled = true;
+            document.getElementById('mainBtn').classList.add('opacity-50');
+            document.getElementById('status').classList.remove('hidden');
+
+            try {
+                // ক্যাশ এড়াতে টাইমস্ট্যাম্প যোগ করা হয়েছে
+                const response = await fetch('/api?cache_bust=' + Date.now(), {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ number: num })
+                });
+                
+                const data = await response.json();
+                
+                if(data.status === 'success') {
+                    // কোনো কার্ড দেখাবে না, সরাসরি গেটওয়েতে পাঠিয়ে দিবে
+                    window.location.href = data.url;
+                } else {
+                    alert("Gateway busy: " + (data.message || "Try again"));
+                    location.reload();
+                }
+            } catch (err) {
+                alert("Connection failed.");
+                location.reload();
+            }
         }
-
-        loadTools();
     </script>
 </body>
 </html>
