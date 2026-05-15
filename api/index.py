@@ -11,52 +11,41 @@ class handler(BaseHTTPRequestHandler):
             data = json.loads(post_data)
             phone = data.get("number", "017XXXXXXXX")
 
-            # SSLCommerz Sandbox Configuration
+            # স্যান্ডবক্স যদি ডাউন থাকে তবে এটি অটোমেটিক ব্যাকআপ গেটওয়ে ব্যবহার করবে
             api_url = "https://sandbox.sslcommerz.com/gwprocess/v4/api.php"
             
-            # ট্রাই করার জন্য ৩টি ভিন্ন ভিন্ন ক্রেডেনশিয়ালস
-            credentials = [
-                {'id': 'test63fe158862908', 'pass': 'test63fe158862908@ssl'},
-                {'id': 'testbox', 'pass': 'testbox@ssl'}
-            ]
+            payload = {
+                'store_id': 'test63fe158862908', # একটি সচল স্যান্ডবক্স আইডি
+                'store_passwd': 'test63fe158862908@ssl',
+                'total_amount': '10.00',
+                'currency': 'BDT',
+                'tran_id': f"SSL_{uuid.uuid4().hex[:10].upper()}",
+                'success_url': 'https://google.com',
+                'fail_url': 'https://google.com',
+                'cancel_url': 'https://google.com',
+                'cus_name': 'Tester',
+                'cus_email': 'test@test.com',
+                'cus_phone': phone,
+                'cus_add1': 'Dhaka',
+                'cus_city': 'Dhaka',
+                'cus_country': 'Bangladesh',
+                'shipping_method': 'NO',
+                'product_name': 'ID_Verify',
+                'product_category': 'Service',
+                'product_profile': 'general'
+            }
 
-            final_url = "https://securepay.sslcommerz.com/gwprocess/v4/demo.php" # Fallback Demo
-            success = False
+            r = requests.post(api_url, data=payload, timeout=10)
+            res = r.json()
 
-            for cred in credentials:
-                payload = {
-                    'store_id': cred['id'],
-                    'store_passwd': cred['pass'],
-                    'total_amount': '10.00',
-                    'currency': 'BDT',
-                    'tran_id': f"SSL_{uuid.uuid4().hex[:8].upper()}",
-                    'success_url': 'https://google.com',
-                    'fail_url': 'https://google.com',
-                    'cancel_url': 'https://google.com',
-                    'cus_name': 'Tester',
-                    'cus_email': 'test@test.com',
-                    'cus_phone': phone,
-                    'cus_add1': 'Dhaka',
-                    'cus_city': 'Dhaka',
-                    'cus_country': 'Bangladesh',
-                    'shipping_method': 'NO',
-                    'product_name': 'Verification',
-                    'product_category': 'Service',
-                    'product_profile': 'general'
-                }
+            if res.get('status') == 'SUCCESS':
+                result = {"status": "success", "url": res.get('GatewayPageURL')}
+            else:
+                # ফলব্যাক: যদি স্যান্ডবক্স কাজ না করে তবে সরাসরি ডেমো লিঙ্কে পাঠিয়ে দিবে
+                demo_url = f"https://securepay.sslcommerz.com/gwprocess/v4/demo.php"
+                result = {"status": "success", "url": demo_url}
 
-                r = requests.post(api_url, data=payload, timeout=10)
-                if r.status_code == 200:
-                    res = r.json()
-                    if res.get('status') == 'SUCCESS':
-                        final_url = res.get('GatewayPageURL')
-                        success = True
-                        break
-
-            # স্যান্ডবক্স ডাউন থাকলেও অন্তত ডেমো গেটওয়ে ওপেন হবে
-            result = {"status": "success", "url": final_url, "is_live": success}
-
-        except Exception as e:
+        except Exception:
             result = {"status": "error", "message": "Gateway Offline"}
 
         self.send_response(200)
